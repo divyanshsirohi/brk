@@ -74,7 +74,7 @@ function CountdownTimer() {
 
                 <div className="magic-message">
                     <span role="img" aria-label="sparkles">✨</span>
-                    <span>Something magical is coming!</span>
+                    <span>OMGGGGG IM SOOO EXCITED FOR WHATS GOING TO HAPPEN WHEN THE TIMER HITS ZERO. TRUST ME YOU WILL LOVE IT. I LOVE YOU FOREVER BARKHA!!!!!</span>
                     <span role="img" aria-label="sparkles">✨</span>
                 </div>
             </div>
