@@ -50,6 +50,7 @@ function CountdownTimer() {
                     <div className="expired-message">
                         <div>🎉 Time's Up! 🎉</div>
                         <div>The moment has arrived!</div>
+                        <div> Make sure to look up at the sky when you go out you will see a surprise you will love !!!! </div>
                     </div>
                 ) : (
                     <div className="timer-grid">
