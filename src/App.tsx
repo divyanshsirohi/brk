@@ -8,196 +8,40 @@ import './App.css'
 export default function App() {
     return (
         <div className="valentine-background">
-            <p>id rather be hated by everyone and loved by you than loved by everyone and hated by you </p>
+            <p id="letterText">
+			To the love of my life, Barkha,<br><br>
+			When I first met you, I wasn't looking for anything. I was content staying in my little world. Quiet, predictable, safe. I convinced myself I was fine with being alone. I had built walls around my heart so high that even I started to believe nothing could get through them.<br><br>
+
+			The gentle soul I was never worthy of holding.<br><br>
+
+			Everything that is pure in me was born the moment I met you. A love that became everything. I’ll hold onto it until my last breath. Because my heart refused to learn the language of goodbye.<br><br>
+
+			From the first glance, I had no choice. All my doubts, worries and fears dissolved. My soul had already chosen you as its forever home, long before my mind understood what forever meant.<br><br>
+
+			From the moment you entered my life everything became softer, warmer, and so much more meaningful. Now every day that I wake up, I have a goal to become a better man for you.<br><br>
+
+			Even during our fights, I always know that no matter what, we will choose each other again. I just know and always have that feeling that I'm meant to be with you. I'm ready to fight anything and everything just to be with you.<br><br>
+
+			Today marks our one year of dating it’s crazy how we ended up together even after everything that has happened. It honestly doesn’t even feel like a year has passed. Time with you just flies.<br><br>
+
+			When I say “I love you,” I mean that I see everything beautiful in you, your kindness, your dreams, and even your unique quirks. I love how thoughtful you are, how you push yourself despite your struggles, and how you constantly strive to be your best. You remind me of the strength and resilience it takes to face challenges head-on, and I’m so proud of you for everything you accomplish, even if you can’t always see it yourself.
+
+			Your presence in my life has been a gift beyond words. You’ve taught me so much about love, trust, and vulnerability. With you, I’m learning what it means to truly give myself to someone, not out of need, but out of a genuine desire to make you feel valued, loved, and enough because you are. I feel lucky to be the one who gets to remind you of that every day.
+
+			I understand that life can sometimes get overwhelming, and I know you may feel uncertain or doubt yourself. But through it all, I’m here, wholeheartedly, to stand by you. I want to be someone you can lean on, someone who loves you exactly as you are, even when things feel difficult. I want to be a safe place where you never have to question if you’re enough, because, to me, you always are.
+
+			I promise to keep doing my best to make you feel special, appreciated, and loved, as you deserve. You mean the world to me, and there’s no way I could ever put into words just how deeply I care for you. I hope that in every smile, every laugh, and every quiet moment together, you feel my love and know just how much you mean to me.
+
+			Thank you for being my everything :)
+
+			Thank you for choosing me, for staying, for caring, and for letting me love you the way I do.<br><br>
+
+			Thank you, Barkha, for once again being a wonderful, sweet human being to me.<br><br>
+
+			Yours, always. 💗
+		</p>
         </div>
     )
 }
 
-
-
-#include <lpc17xx.h>
-#include <stdio.h>
-
-// ## Pin Definitions ##
-// P0.22 for the Buzzer
-#define BUZZER_PIN (1 << 22) 
-// P0.8 for LCD Register Select (RS)
-#define RS_CTRL (1 << 8)    
-// P0.9 for LCD Enable (EN)
-#define EN_CTRL (1 << 9)     
-// P0.4 to P0.7 for LCD Data Lines (D4-D7)
-#define DT_CTRL (0xF << 4)   
-
-// ## Constants ##
-#define refVtg 3.3 // Reference voltage for ADC is typically 3.3V on LPC1768
-#define digitalMax 4095.0 // 12-bit ADC resolution (2^12 - 1)
-#define AQI_THRESHOLD 100 // Example threshold for buzzer alert
-
-// ## LCD Messages ##
-char msg[] = "CO PPM: ";
-char msg2[] = "AQI: ";
-
-// ## LCD Initialization Commands (for 4-bit mode) ##
-unsigned long int init_command[] = {0x30, 0x30, 0x30, 0x20, 0x28, 0x0C, 0x06, 0x01, 0x80};
-
-// ## Global Variables ##
-unsigned int temp1, temp2, i;
-// flag1: 0 for command, 1 for data
-// flag2: Special handling for initial commands
-int flag1, flag2;
-
-// ## Function Prototypes ##
-void lcd_init(void);
-void lcd_write(void);
-void port_write(void);
-void delay(unsigned int);
-void lcd_print_msg(const char *msg_ptr, unsigned char line);
-int map_adc_to_ppm(int adc_val);
-
-// ## Main Program ##
-int main(void) {
-    unsigned int mqReading;
-    int ppm, aqi;
-    char ppmStr[16], aqiStr[16];
-
-    SystemInit();
-    SystemCoreClockUpdate();
-
-    // --- ADC Initialization for MQ-7 Sensor on P0.23 ---
-    // 1. Configure Pin P0.23 as AD0.0
-    LPC_PINCON->PINSEL1 &= ~(3 << 14); // Clear bits 15:14
-    LPC_PINCON->PINSEL1 |= (1 << 14);  // Set to 01 for AD0.0 function
-    // 2. Enable ADC Power
-    LPC_SC->PCONP |= (1 << 12);
-    // 3. Configure ADC Control Register
-    // Select AD0.0, set clock divider, and enable the ADC
-    LPC_ADC->ADCR = (1 << 0) | (4 << 8) | (1 << 21);
-
-    // --- GPIO Initialization for LCD & Buzzer ---
-    LPC_GPIO0->FIODIR |= RS_CTRL | EN_CTRL | DT_CTRL | BUZZER_PIN;
-
-    // --- System Setup ---
-    lcd_init();
-    lcd_print_msg("CO PPM: ", 0x80); // Line 1
-    lcd_print_msg("AQI: ", 0xC0);    // Line 2
-
-    while (1) {
-        // --- Read Sensor Data ---
-        LPC_ADC->ADCR |= (1 << 24); // Start ADC conversion now
-        while (!(LPC_ADC->ADGDR & (1U << 31))); // Wait for conversion to complete
-        mqReading = (LPC_ADC->ADGDR >> 4) & 0xFFF; // Extract 12-bit result
-
-        // --- Process Data ---
-        ppm = map_adc_to_ppm(mqReading);
-        aqi = ppm / 2; // Simplified AQI calculation logic
-
-        // --- Display Data on LCD ---
-        // Convert integer values to strings
-        sprintf(ppmStr, "%-4d", ppm); // Format to 4 chars to overwrite old data
-        sprintf(aqiStr, "%-4d", aqi);
-
-        // Display PPM value
-        lcd_print_msg(ppmStr, 0x88); // Position after "CO PPM: "
-        
-        // Display AQI value
-        lcd_print_msg(aqiStr, 0xC5); // Position after "AQI: "
-
-        // --- Control Buzzer ---
-        if (aqi >= AQI_THRESHOLD) {
-            LPC_GPIO0->FIOSET = BUZZER_PIN; // Turn Buzzer ON
-        } else {
-            LPC_GPIO0->FIOCLR = BUZZER_PIN; // Turn Buzzer OFF
-        }
-        
-        delay(500000); // Wait before next reading
-    }
-}
-
-/**
- * @brief Maps the 12-bit ADC value to an estimated PPM value.
- * @note This is a placeholder linear mapping. A real sensor requires a logarithmic
- * calculation based on its datasheet (using RL and Rs/R0).
- */
-int map_adc_to_ppm(int adc_val) {
-    // Simple linear scaling from 0-4095 to 0-1000 PPM as an example
-    return (int)(((float)adc_val / 4095.0f) * 1000.0f);
-}
-
-/**
- * @brief Initializes the 16x2 LCD in 4-bit mode.
- */
-void lcd_init(void) {
-    flag1 = 0; // Set to command mode
-    for (i = 0; i < 9; i++) {
-        temp1 = init_command[i];
-        lcd_write();
-        delay(30000);
-    }
-    flag1 = 1; // Set back to data mode
-}
-
-/**
- * @brief Writes a command or data to the LCD.
- * Splits the byte into two nibbles for 4-bit mode.
- */
-void lcd_write(void) {
-    // Special handling for initial 0x30, 0x30, 0x30, 0x20 commands
-    flag2 = (flag1 == 0) && ((temp1 == 0x30) || (temp1 == 0x20));
-    
-    // Send upper nibble
-    temp2 = (temp1 >> 4) & 0x0F;
-    port_write();
-
-    // Send lower nibble if not a special initial command
-    if (!flag2) {
-        temp2 = temp1 & 0x0F;
-        port_write();
-    }
-}
-
-/**
- * @brief Sends a 4-bit nibble to the LCD data pins.
- */
-void port_write(void) {
-    LPC_GPIO0->FIOCLR = DT_CTRL; // Clear data pins P0.4-P0.7
-    LPC_GPIO0->FIOSET = (temp2 << 4); // Set new nibble value
-
-    if (flag1 == 0)
-        LPC_GPIO0->FIOCLR = RS_CTRL; // RS=0 for command
-    else
-        LPC_GPIO0->FIOSET = RS_CTRL; // RS=1 for data
-
-    LPC_GPIO0->FIOSET = EN_CTRL; // EN=1 (High)
-    delay(25);
-    LPC_GPIO0->FIOCLR = EN_CTRL; // EN=0 (High-to-Low pulse)
-    delay(30000);
-}
-
-/**
- * @brief Prints a string to the LCD at a specific line.
- * @param msg_ptr Pointer to the string to be printed.
- * @param line The starting address (e.g., 0x80 for line 1, 0xC0 for line 2).
- */
-void lcd_print_msg(const char *msg_ptr, unsigned char line) {
-    // Set cursor position
-    temp1 = line;
-    flag1 = 0; // Command mode
-    lcd_write();
-
-    // Print characters
-    flag1 = 1; // Data mode
-    while (*msg_ptr != '\0') {
-        temp1 = *msg_ptr;
-        lcd_write();
-        msg_ptr++;
-    }
-}
-
-/**
- * @brief Creates a simple software-based delay.
- */
-void delay(unsigned int r1) {
-    volatile unsigned int r;
-    for (r = 0; r < r1; r++);
-}
 
